@@ -1,0 +1,13 @@
+chromadb
+sentence-transformers
+requests
+beautifulsoup4
+lxml
+fastapi
+uvicorn[standard]
+transformers
+pydantic>=2.0
+
+# Optional — only needed if you want to run a generative LLM locally with GPU
+# torch
+# accelerate

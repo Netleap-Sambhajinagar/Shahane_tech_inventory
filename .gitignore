@@ -1,0 +1,17 @@
+.venv/
+__pycache__/
+chroma_data/
+.vscode/
+.idea/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+bin/
+lib/
+include/
+share/
+pyvenv.cfg
+pip-selfcheck.json
