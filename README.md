@@ -1,4 +1,4 @@
-# 📄 Shahane Tech RAG — Portfolio Chatbot
+#  Shahane Tech RAG — Portfolio Chatbot
 
 A **local RAG (Retrieval-Augmented Generation)** pipeline that:
 1. **Scrapes** a portfolio website (with internal link crawling)
@@ -7,7 +7,7 @@ A **local RAG (Retrieval-Augmented Generation)** pipeline that:
 
 ---
 
-## 🚀 Quick Start
+##  Quick Start
 
 ### 1. Create & activate virtual environment
 
@@ -69,7 +69,7 @@ curl -X POST http://localhost:8000/chat \
 
 ---
 
-## 🗂 Project Structure
+##  Project Structure
 
 ```
 Shahane tech rag/
@@ -82,7 +82,7 @@ Shahane tech rag/
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 Edit the top of `indexer.py` or `api.py` to change:
 
@@ -97,7 +97,7 @@ In `indexer.py`, you can also change `max_pages` in `scrape_site()` to crawl mor
 
 ---
 
-## 🛠 Troubleshooting
+## Troubleshooting
 
 - **"Collection not found"** → Run `python indexer.py` first before starting the API.
 - **"No text extracted"** → The target website may be blocking bots or is JavaScript-only. Check the URL.
