@@ -19,11 +19,10 @@ CHROMA_DATA_PATH = "./chroma_data"
 COLLECTION_NAME = "Portfolio_website"
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 
-# ✅ Lightweight extractive QA model (~500 MB, CPU-only, no GPU/accelerate needed)
-# Reads your retrieved chunks and extracts the best-matching answer span.
+
 QA_MODEL = "deepset/roberta-base-squad2"
 
-# --- Global state (populated at startup) ---
+
 state: dict = {}
 
 
@@ -48,14 +47,14 @@ async def lifespan(app: FastAPI):
         )
 
     print(f"Loading QA model: {QA_MODEL} ...")
-    # device=-1 → force CPU (no GPU, no accelerate required)
+    
     qa_pipe = pipeline("question-answering", model=QA_MODEL, device=-1)
     print("✅ All models loaded. API is ready!\n")
 
     state["collection"] = collection
     state["qa_pipeline"] = qa_pipe
 
-    yield  # --- app is running ---
+    yield  
 
     state.clear()
 
@@ -71,13 +70,13 @@ app.add_middleware(
 )
 
 
-# ─── Request / Response models ─────────────────────────────────────────────────
+
 
 class ChatRequest(BaseModel):
     query: str
 
 
-# ─── Endpoints ────────────────────────────────────────────────────────────────
+
 
 @app.get("/")
 def root():
@@ -108,7 +107,7 @@ def chat_with_website(request: ChatRequest):
     collection = state["collection"]
     qa_pipe = state["qa_pipeline"]
 
-    # ── Step 1: Retrieve relevant chunks from ChromaDB ─────────────────────
+
     try:
         results = collection.query(query_texts=[user_query], n_results=5)
     except Exception as e:
@@ -122,8 +121,7 @@ def chat_with_website(request: ChatRequest):
             "sources": [],
         }
 
-    # ── Step 2: Run extractive QA over each chunk, pick the best answer ────
-    # Combine all chunks into one context (RoBERTa handles up to 512 tokens)
+   
     context = " ".join(retrieved_chunks)
 
     try:
