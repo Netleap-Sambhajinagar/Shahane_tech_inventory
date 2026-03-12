@@ -5,6 +5,7 @@ const AccountCard = ({ icon: Icon, title, iconColor, bgColor }) => {
   return (
     <div className="flex items-center gap-4 p-6 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
       <div className={`${bgColor} p-3 rounded-lg flex items-center justify-center`}>
+        {/* eslint-disable-next-line react/prop-types */}
         <Icon className={`${iconColor} w-6 h-6`} />
       </div>
       <h3 className="font-semibold text-slate-900 text-lg">{title}</h3>
