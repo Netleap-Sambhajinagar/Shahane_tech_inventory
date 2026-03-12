@@ -1,11 +1,12 @@
 import React from 'react';
 import { Package, MapPin, Shield, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
-const AccountCard = ({ icon: Icon, title, iconColor, bgColor }) => {
+const AccountCard = ({ icon, title, iconColor, bgColor }) => {
+  const Icon = icon;
   return (
     <div className="flex items-center gap-4 p-6 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
       <div className={`${bgColor} p-3 rounded-lg flex items-center justify-center`}>
-        {/* eslint-disable-next-line react/prop-types */}
         <Icon className={`${iconColor} w-6 h-6`} />
       </div>
       <h3 className="font-semibold text-slate-900 text-lg">{title}</h3>
@@ -14,6 +15,15 @@ const AccountCard = ({ icon: Icon, title, iconColor, bgColor }) => {
 };
 
 const Account = () => {
+  const navigate = useNavigate();
+  const user = JSON.parse(localStorage.getItem('user'));
+
+  React.useEffect(() => {
+    if (!user) {
+      navigate('/login');
+    }
+  }, [user, navigate]);
+
   const accountLinks = [
     {
       title: 'Your Orders',
@@ -41,9 +51,14 @@ const Account = () => {
     }
   ];
 
+  if (!user) return null;
+
   return (
     <div className="max-w-6xl mx-auto px-6 py-12">
-      <h1 className="text-3xl font-bold text-slate-900 mb-8">Your Account</h1>
+      <div className="mb-12">
+        <h1 className="text-4xl font-bold text-slate-900 mb-2">Hello, {user.first_name || user.name}!</h1>
+        <p className="text-slate-500 font-medium">{user.email}</p>
+      </div>
       
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6 max-w-4xl">
         {accountLinks.map((link, index) => (

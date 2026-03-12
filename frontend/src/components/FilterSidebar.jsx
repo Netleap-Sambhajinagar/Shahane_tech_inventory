@@ -1,18 +1,18 @@
 import React from 'react';
 
-const FilterSidebar = () => {
+const FilterSidebar = ({ activeFilters, onToggle }) => {
   const categories = [
-    { label: '250 ML', checked: true },
-    { label: '375 ML', checked: false },
-    { label: '500 ML', checked: false },
-    { label: '600 ML', checked: false },
-    { label: '≥750 ML', checked: false },
+    '250 ML',
+    '375 ML',
+    '500 ML',
+    '600 ML',
+    '≥750 ML',
   ];
 
   return (
-    <aside className="w-64 p-8 border-r border-slate-100 min-h-[calc(100vh-80px)]">
+    <aside className="w-64 p-8 border-r border-slate-100 min-h-[calc(100vh-80px)] hidden md:block stick top-24">
       <div className="mb-8">
-        <p className="text-slate-900 font-bold mb-8 text-xl">Home &gt; 250 ML</p>
+        <p className="text-slate-900 font-bold mb-8 text-xl">Home &gt; Shop</p>
         <h2 className="text-2xl font-bold text-slate-900 border-t border-slate-200 pt-6 mt-6">Filter:</h2>
       </div>
 
@@ -23,12 +23,12 @@ const FilterSidebar = () => {
             <label key={index} className="flex items-center gap-3 cursor-pointer group">
               <input 
                 type="checkbox" 
-                checked={cat.checked}
-                onChange={() => {}}
-                className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900"
+                checked={activeFilters.includes(cat)}
+                onChange={() => onToggle(cat)}
+                className="w-4 h-4 rounded border-slate-300 text-slate-900 focus:ring-slate-900 cursor-pointer"
               />
-              <span className={`text-sm font-medium transition-colors ${cat.checked ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'}`}>
-                {cat.label}
+              <span className={`text-sm font-medium transition-colors ${activeFilters.includes(cat) ? 'text-slate-900' : 'text-slate-400 group-hover:text-slate-600'}`}>
+                {cat}
               </span>
             </label>
           ))}

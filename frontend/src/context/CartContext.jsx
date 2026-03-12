@@ -15,14 +15,21 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   const addToCart = (product) => {
+    const qtyToAdd = product.quantity !== undefined ? product.quantity : 1;
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
+        const newQty = (existing.quantity || 1) + qtyToAdd;
+        if (newQty <= 0) {
+          return prev.filter(item => item.id !== product.id);
+        }
         return prev.map(item => 
-          item.id === product.id ? { ...item, quantity: (item.quantity || 1) + 1 } : item
+          item.id === product.id ? { ...item, quantity: newQty } : item
         );
       }
-      return [...prev, { ...product, quantity: 1 }];
+      // If it's a new item, ensure we don't add negative or zero
+      if (qtyToAdd <= 0) return prev;
+      return [...prev, { ...product, quantity: qtyToAdd }];
     });
   };
 
