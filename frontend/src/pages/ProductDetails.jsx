@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Star, Minus, Plus, ShoppingCart } from 'lucide-react';
+import BOX_IMAGE from '../assets/product_box.png';
 import { useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
@@ -45,13 +46,13 @@ const ProductDetails = () => {
           <div className="grid grid-cols-3 gap-4">
              {/* Using the same thumbnails image for all slots for demo */}
             <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
-              <img src={THUMBNAILS} alt="Thumbnail 1" className="w-full h-full object-cover" />
+              <img src={BOX_IMAGE} alt="Thumbnail 1" className="w-full h-full object-cover" />
             </div>
             <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
-              <img src={THUMBNAILS} alt="Thumbnail 2" className="w-full h-full object-cover" />
+              <img src={BOX_IMAGE} alt="Thumbnail 2" className="w-full h-full object-cover" />
             </div>
             <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
-              <img src={THUMBNAILS} alt="Thumbnail 3" className="w-full h-full object-cover" />
+              <img src={BOX_IMAGE} alt="Thumbnail 3" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>

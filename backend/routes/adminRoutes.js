@@ -1,3 +1,6 @@
+const express = require('express');
+const router = express.Router();
+const db = require('../models/database');
 const { registerAdmin, loginAdmin } = require('../controllers/authController');
 
 // Auth Routes

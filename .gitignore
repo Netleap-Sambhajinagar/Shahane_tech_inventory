@@ -15,3 +15,5 @@ include/
 share/
 pyvenv.cfg
 pip-selfcheck.json
+node_modules/
+.env
