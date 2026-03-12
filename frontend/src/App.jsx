@@ -8,6 +8,7 @@ import Account from './pages/Account';
 import Checkout from './pages/Checkout';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
+import ChatWidget from './components/ChatWidget';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
           </Routes>
+          <ChatWidget />
         </div>
       </BrowserRouter>
     </CartProvider>

@@ -1,16 +1,16 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { User, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight } from 'lucide-react';
 
 const Signup = () => {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     first_name: '',
     last_name: '',
     email: '',
     password: '',
     phone_number: '',
     user_id: `U${Math.floor(Date.now() / 1000)}`
-  });
+  }));
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -29,6 +29,7 @@ const Signup = () => {
         setError(data.message || 'Registration failed');
       }
     } catch (err) {
+      console.error(err);
       setError('Something went wrong. Please try again.');
     }
   };

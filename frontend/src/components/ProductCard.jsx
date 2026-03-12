@@ -1,8 +1,7 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
 const ProductCard = ({ id, name, size, price, oldPrice, minOrder, deliveryDate, image }) => {
-  const navigate = useNavigate();
   const { addToCart } = useCart();
 
   const handleAddToCart = (e) => {

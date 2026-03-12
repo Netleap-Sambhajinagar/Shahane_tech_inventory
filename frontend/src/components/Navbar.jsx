@@ -1,5 +1,5 @@
 import { useNavigate, Link } from 'react-router-dom';
-import { Search, User, ShoppingCart, LogOut } from 'lucide-react';
+import { Search, User, ShoppingCart, LogOut, ArrowLeft } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 const Navbar = () => {
@@ -15,17 +15,26 @@ const Navbar = () => {
 
   return (
     <nav className="flex items-center justify-between px-8 py-4 bg-white border-b border-slate-100 sticky top-0 z-50">
-      <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-        <div className="bg-slate-900 p-1.5 rounded">
-          <div className="w-5 h-5 border-2 border-white rotate-45 flex items-center justify-center">
-            <div className="w-2 h-2 bg-white rounded-full"></div>
+      <div className="flex items-center gap-6">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="p-2 -ml-2 text-slate-400 hover:text-slate-900 bg-slate-50 hover:bg-slate-100 rounded-full transition-colors flex items-center justify-center shadow-sm border border-slate-200"
+          title="Go Back"
+        >
+          <ArrowLeft size={20} className="w-5 h-5" />
+        </button>
+        <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+          <div className="bg-slate-900 p-1.5 rounded">
+            <div className="w-5 h-5 border-2 border-white rotate-45 flex items-center justify-center">
+              <div className="w-2 h-2 bg-white rounded-full"></div>
+            </div>
           </div>
-        </div>
-        <div>
-          <h1 className="font-bold text-lg leading-tight tracking-tight uppercase text-slate-900">Shahane</h1>
-          <p className="text-[9px] text-slate-400 font-medium tracking-widest leading-none text-center">TECH MARKETING LLP</p>
-        </div>
-      </Link>
+          <div>
+            <h1 className="font-bold text-lg leading-tight tracking-tight uppercase text-slate-900">Shahane</h1>
+            <p className="text-[9px] text-slate-400 font-medium tracking-widest leading-none text-center">TECH MARKETING LLP</p>
+          </div>
+        </Link>
+      </div>
 
       <div className="flex items-center gap-6">
         <button className="text-slate-900 hover:text-slate-600 transition-colors">

@@ -74,6 +74,7 @@ app.add_middleware(
 
 class ChatRequest(BaseModel):
     query: str
+    context: str = None
 
 
 
@@ -104,26 +105,28 @@ def chat_with_website(request: ChatRequest):
 
     print(f"\nUser asked: {user_query}")
 
-    collection = state["collection"]
+    if request.context:
+        context = request.context.strip()
+        sources = [{"source": "current-page"}]
+    else:
+        collection = state["collection"]
+        try:
+            results = collection.query(query_texts=[user_query], n_results=5)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=f"Retrieval error: {e}")
+
+        retrieved_chunks = results["documents"][0]
+
+        if not retrieved_chunks:
+            return {
+                "response": "I'm sorry, I couldn't find any relevant information in the database.",
+                "sources": [],
+            }
+
+        context = " ".join(retrieved_chunks)
+        sources = results["metadatas"][0]
+
     qa_pipe = state["qa_pipeline"]
-
-
-    try:
-        results = collection.query(query_texts=[user_query], n_results=5)
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Retrieval error: {e}")
-
-    retrieved_chunks = results["documents"][0]
-
-    if not retrieved_chunks:
-        return {
-            "response": "I'm sorry, I couldn't find any relevant information in the database.",
-            "sources": [],
-        }
-
-   
-    context = " ".join(retrieved_chunks)
-
     try:
         output = qa_pipe(question=user_query, context=context)
         answer = output["answer"].strip()
@@ -139,5 +142,5 @@ def chat_with_website(request: ChatRequest):
     return {
         "response": answer,
         "confidence": confidence,
-        "sources": results["metadatas"][0],
+        "sources": sources,
     }
