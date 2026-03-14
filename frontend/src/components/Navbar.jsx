@@ -24,15 +24,11 @@ const Navbar = () => {
           <ArrowLeft size={20} className="w-5 h-5" />
         </button>
         <Link to="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-          <div className="bg-slate-900 p-1.5 rounded">
-            <div className="w-5 h-5 border-2 border-white rotate-45 flex items-center justify-center">
-              <div className="w-2 h-2 bg-white rounded-full"></div>
-            </div>
-          </div>
-          <div>
-            <h1 className="font-bold text-lg leading-tight tracking-tight uppercase text-slate-900">Shahane</h1>
-            <p className="text-[9px] text-slate-400 font-medium tracking-widest leading-none text-center">TECH MARKETING LLP</p>
-          </div>
+          <img 
+            src="/Logo.jpeg" 
+            alt="Shahane Tech Marketing LLP" 
+            className="h-8 w-auto object-contain"
+          />
         </Link>
       </div>
 
@@ -66,12 +62,12 @@ const Navbar = () => {
           </div>
         )}
         
-        <button className="text-slate-900 hover:text-slate-600 transition-colors relative">
+        <Link to="/cart" className="text-slate-900 hover:text-slate-600 transition-colors relative">
           <ShoppingCart size={24} />
           {cartCount > 0 && (
             <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-600 rounded-full border-2 border-white animate-pulse"></span>
           )}
-        </button>
+        </Link>
       </div>
     </nav>
   );

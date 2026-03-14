@@ -113,7 +113,7 @@ const AdminSignup = () => {
         </form>
 
         <p className="text-center mt-8">
-          <Link to="/login" className="text-[10px] font-black text-slate-400 hover:text-slate-900 uppercase tracking-[0.2em] transition-colors">Already registered? Sign In</Link>
+          <Link to="/register" className="text-[10px] font-black text-slate-400 hover:text-slate-900 uppercase tracking-[0.2em] transition-colors">Already registered? Sign In</Link>
         </p>
       </div>
     </div>

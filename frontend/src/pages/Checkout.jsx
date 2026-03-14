@@ -1,15 +1,23 @@
 import React, { useState } from 'react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import BOX_IMAGE from '../assets/product_box.png';
 import { useCart } from '../context/CartContext';
 
 const Checkout = () => {
   const { cartItems, removeFromCart, addToCart, cartCount } = useCart();
   const [discountCode, setDiscountCode] = useState('');
+  const navigate = useNavigate();
 
   const subtotal = cartItems.reduce((acc, item) => acc + (item.price * item.quantity), 0);
   const tax = Math.round(subtotal * 0.05); // 5% tax
   const total = subtotal + tax;
+
+  const handlePlaceOrder = () => {
+    // Here you would typically process the payment and create the order
+    // For now, we'll just navigate to the confirmation page
+    navigate('/order-confirmation');
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
@@ -154,6 +162,7 @@ const Checkout = () => {
 
             <button 
               disabled={cartItems.length === 0}
+              onClick={handlePlaceOrder}
               className="w-full py-4 bg-blue-600 text-white rounded-xl text-lg font-bold hover:bg-blue-700 transition-all shadow-[0_4px_14px_0_rgba(37,99,235,0.3)] uppercase disabled:opacity-50 disabled:shadow-none"
             >
               place order

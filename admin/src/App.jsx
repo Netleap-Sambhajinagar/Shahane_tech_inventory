@@ -69,7 +69,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={isAdminAuthenticated ? <Navigate to="/" /> : <Login />} />
-        <Route path="/signup" element={<Signup />} />
+        <Route path="/register" element={<Signup />} />
         <Route 
           path="/*" 
           element={isAdminAuthenticated ? <Dashboard /> : <Navigate to="/login" />} 

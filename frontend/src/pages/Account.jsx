@@ -2,10 +2,13 @@ import React from 'react';
 import { Package, MapPin, Shield, Phone } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
-const AccountCard = ({ icon, title, iconColor, bgColor }) => {
+const AccountCard = ({ icon, title, iconColor, bgColor, onClick }) => {
   const Icon = icon;
   return (
-    <div className="flex items-center gap-4 p-6 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group">
+    <div 
+      onClick={onClick}
+      className="flex items-center gap-4 p-6 border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors cursor-pointer group"
+    >
       <div className={`${bgColor} p-3 rounded-lg flex items-center justify-center`}>
         <Icon className={`${iconColor} w-6 h-6`} />
       </div>
@@ -29,7 +32,8 @@ const Account = () => {
       title: 'Your Orders',
       icon: Package,
       iconColor: 'text-orange-600',
-      bgColor: 'bg-orange-50'
+      bgColor: 'bg-orange-50',
+      onClick: () => navigate('/order-tracking')
     },
     {
       title: 'Your Addresses',
@@ -68,6 +72,7 @@ const Account = () => {
             title={link.title}
             iconColor={link.iconColor}
             bgColor={link.bgColor}
+            onClick={link.onClick}
           />
         ))}
       </div>
