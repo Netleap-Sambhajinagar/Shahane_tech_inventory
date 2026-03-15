@@ -2,6 +2,8 @@ const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
+const { createServer } = require("http");
+const { Server } = require("socket.io");
 require('dotenv').config();
 
 const productRoutes = require('./routes/productRoutes');
@@ -10,6 +12,13 @@ const userRoutes = require('./routes/userRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
+const server = createServer(app);
+const io = new Server(server, {
+    cors: {
+        origin: "http://localhost:5173", // Admin frontend URL
+        methods: ["GET", "POST"]
+    }
+});
 
 // Middleware
 app.use(helmet());
@@ -36,8 +45,20 @@ app.use((err, req, res, next) => {
     });
 });
 
+// Socket.io connection handling
+io.on('connection', (socket) => {
+    console.log('Admin connected for notifications:', socket.id);
+    
+    socket.on('disconnect', () => {
+        console.log('Admin disconnected:', socket.id);
+    });
+});
+
+// Make io available to routes
+app.set('io', io);
+
 const PORT = process.env.PORT || 5000;
 
-app.listen(PORT, () => {
+server.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });

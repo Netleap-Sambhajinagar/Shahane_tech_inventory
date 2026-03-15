@@ -1,13 +1,13 @@
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 
-const ProductCard = ({ id, name, size, price, oldPrice, minOrder, deliveryDate, image }) => {
+const ProductCard = ({ id, product_id, name, size, price, oldPrice, minOrder, deliveryDate, image }) => {
   const { addToCart } = useCart();
 
   const handleAddToCart = (e) => {
     e.preventDefault();
     e.stopPropagation();
-    addToCart({ id, name, size, price, image });
+    addToCart({ id, product_id, name, size, price, image });
     // Keep user on page so they can see the red dot feedback
   };
 

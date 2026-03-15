@@ -14,6 +14,7 @@ const Home = () => {
       .then(data => {
         const mappedData = data.map(p => ({
           id: p.id,
+          product_id: p.product_id, // Add product_id for cart functionality
           name: p.name,
           size: p.size,
           price: p.purchase_price,

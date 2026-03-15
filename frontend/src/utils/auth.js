@@ -6,6 +6,7 @@ export const getAuthHeaders = () => {
     'Content-Type': 'application/json',
     ...(adminToken && { 'Authorization': `Bearer ${adminToken}` })
   };
+  console.log('Auth headers being sent:', headers);
   return headers;
 };
 

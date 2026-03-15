@@ -20,6 +20,7 @@ const ProductDetails = () => {
       .then(data => {
         setProduct({
             id: data.id,
+            product_id: data.product_id, // Include product_id field
             name: data.name,
             size: data.size,
             price: data.purchase_price,

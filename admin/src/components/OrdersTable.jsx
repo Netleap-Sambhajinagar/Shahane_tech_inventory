@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { SlidersHorizontal, Pencil, Trash2, ChevronRight } from 'lucide-react';
+import { useNotifications } from '../context/NotificationContext';
 
 const OrdersTable = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const { notifications } = useNotifications();
 
-  useEffect(() => {
-    // For now, since login isn't implemented in frontend, this might fail if 'protect' is on.
-    // I'll fetch without token first to see if it works (or if I need to adjust backend for demo)
+  const fetchOrders = () => {
+    setLoading(true);
     fetch('http://localhost:5000/api/orders')
       .then(res => res.json())
       .then(data => {
@@ -18,7 +19,21 @@ const OrdersTable = () => {
         console.error('Error fetching orders:', err);
         setLoading(false);
       });
+  };
+
+  useEffect(() => {
+    fetchOrders();
   }, []);
+
+  // Refresh orders when new order notification is received
+  useEffect(() => {
+    const newOrderNotifications = notifications.filter(n => n.type === 'new_order' && !n.processed);
+    if (newOrderNotifications.length > 0) {
+      fetchOrders();
+      // Mark notifications as processed
+      newOrderNotifications.forEach(n => n.processed = true);
+    }
+  }, [notifications]);
 
   return (
     <div className="px-8 flex-1">

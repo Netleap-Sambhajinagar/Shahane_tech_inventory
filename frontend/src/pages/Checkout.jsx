@@ -13,10 +13,69 @@ const Checkout = () => {
   const tax = Math.round(subtotal * 0.05); // 5% tax
   const total = subtotal + tax;
 
-  const handlePlaceOrder = () => {
-    // Here you would typically process the payment and create the order
-    // For now, we'll just navigate to the confirmation page
-    navigate('/order-confirmation');
+  const handlePlaceOrder = async () => {
+    if (cartItems.length === 0) return;
+
+    try {
+      // Create order data
+      const orderData = {
+        customer_id: `CUST${Date.now()}`, // Generate customer ID
+        customer_type: 'Regular',
+        city: 'Mumbai', // Default city
+        state: 'Maharashtra', // Default state
+        order_date: new Date().toISOString().split('T')[0], // Format: YYYY-MM-DD
+        prize: total,
+        status: 'Pending',
+        items: cartItems.map(item => ({
+          product_id: item.product_id || item.id, // Use product_id if available, otherwise fall back to id
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price
+        }))
+      };
+
+      // Send order to backend
+      const response = await fetch('http://localhost:5000/api/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(orderData)
+      });
+
+      if (response.ok) {
+        const order = await response.json();
+        console.log('Order placed successfully:', order);
+        
+        // Trigger notification check for admin panel
+        if (typeof window.triggerNotificationCheck === 'function') {
+          window.triggerNotificationCheck();
+        }
+        
+        // Clear cart
+        if (typeof window.clearCart === 'function') {
+          window.clearCart();
+        }
+        
+        // Navigate to confirmation with order details
+        navigate('/order-confirmation', { 
+          state: { 
+            orderId: order.order_id,
+            orderData: {
+              ...orderData,
+              order_id: order.order_id
+            }
+          } 
+        });
+      } else {
+        const errorData = await response.json();
+        alert('Failed to place order: ' + (errorData.message || 'Unknown error'));
+      }
+    } catch (error) {
+      console.error('Error placing order:', error);
+      alert('An error occurred while placing your order. Please try again.');
+    }
   };
 
   return (

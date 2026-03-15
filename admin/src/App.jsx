@@ -7,6 +7,7 @@ import LogoutModal from './components/LogoutModal';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { NotificationProvider } from './context/NotificationContext';
 
 function Dashboard() {
   const [activeTab, setActiveTab] = useState('products');
@@ -72,7 +73,13 @@ function App() {
         <Route path="/register" element={<Signup />} />
         <Route 
           path="/*" 
-          element={isAdminAuthenticated ? <Dashboard /> : <Navigate to="/login" />} 
+          element={
+            isAdminAuthenticated ? (
+              <NotificationProvider>
+                <Dashboard />
+              </NotificationProvider>
+            ) : <Navigate to="/login" />
+          } 
         />
       </Routes>
     </BrowserRouter>

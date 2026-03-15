@@ -1,65 +1,33 @@
-import React from 'react';
-import { CheckCircle, Circle, Package, Truck, Home, ShoppingBag } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle, Circle, Package, Truck, Home, ShoppingBag, X, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { makeAuthenticatedRequest } from '../utils/auth';
+import { getOrderStatusFromDB, getStatusColor, getStatusBgColor, formatOrderDate, generateTrackingNumber } from '../utils/orderTracking';
 import BOX_IMAGE from '../assets/product_box.png';
 
 const OrderTracking = () => {
-  // Check if user has any orders - in real app this would come from API
-  const hasOrders = localStorage.getItem('hasOrders') === 'true';
-  
-  // Get real order date from localStorage or use current date as fallback
-  const getOrderDate = () => {
-    const savedOrderDate = localStorage.getItem('orderDate');
-    if (savedOrderDate) {
-      return new Date(savedOrderDate);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+
+  useEffect(() => {
+    fetchUserOrders();
+  }, []);
+
+  const fetchUserOrders = async () => {
+    try {
+      setLoading(true);
+      const data = await makeAuthenticatedRequest('http://localhost:5000/api/orders');
+      setOrders(data);
+      if (data.length > 0) {
+        setSelectedOrder(data[0]); // Select first order by default
+      }
+      setLoading(false);
+    } catch (err) {
+      setError(err.message);
+      setLoading(false);
     }
-    // For demo purposes, use a recent date if no saved date exists
-    const date = new Date();
-    date.setDate(date.getDate() - 2); // 2 days ago
-    return date;
-  };
-  
-  const orderDate = getOrderDate();
-  
-  // Calculate estimated delivery (3-5 business days from order date)
-  const getEstimatedDelivery = () => {
-    const deliveryDate = new Date(orderDate);
-    deliveryDate.setDate(deliveryDate.getDate() + 4); // 4 days for delivery
-    return deliveryDate;
-  };
-  
-  const estimatedDelivery = getEstimatedDelivery();
-  
-  // Generate real tracking number
-  const generateTrackingNumber = () => {
-    const timestamp = orderDate.getTime().toString().slice(-6);
-    return `00${timestamp}NB21`;
-  };
-  
-  // Sample order data with real dates
-  const orderDetails = {
-    productName: 'Hinged box',
-    productSize: '250 ML',
-    quantity: 2,
-    estimatedArrival: estimatedDelivery.toLocaleDateString('en-US', { 
-      weekday: 'short', 
-      day: 'numeric', 
-      month: 'short', 
-      year: 'numeric' 
-    }).toUpperCase(),
-    trackingNumber: generateTrackingNumber(),
-    productImage: BOX_IMAGE,
-    status: 'dispatch', // can be 'ordered', 'dispatch', 'delivered'
-    orderDate: orderDate.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
-      year: 'numeric' 
-    }),
-    orderTime: orderDate.toLocaleTimeString('en-US', { 
-      hour: '2-digit', 
-      minute: '2-digit' 
-    }),
-    price: 22
   };
 
   const recommendedProducts = [
@@ -99,15 +67,87 @@ const OrderTracking = () => {
     { key: 'delivered', label: 'Delivered', icon: Home },
   ];
 
-  const getCurrentStepIndex = () => {
+  const getCurrentStepIndex = (status) => {
+    if (status === 'cancelled') return -1;
     const steps = ['ordered', 'dispatch', 'delivered'];
-    return steps.indexOf(orderDetails.status);
+    return steps.indexOf(status);
   };
 
-  const currentStepIndex = getCurrentStepIndex();
+  const getEstimatedDelivery = (orderDate) => {
+    const deliveryDate = new Date(orderDate);
+    deliveryDate.setDate(deliveryDate.getDate() + 4); // 4 days for delivery
+    return deliveryDate;
+  };
+
+  const getOrderDetails = (order) => {
+    const orderDate = formatOrderDate(order.order_date);
+    const estimatedDelivery = getEstimatedDelivery(orderDate);
+    
+    return {
+      ...order,
+      productName: 'Hinged box', // Default product name
+      productSize: '250 ML', // Default size
+      quantity: 2, // Default quantity
+      estimatedArrival: estimatedDelivery.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+      }).toUpperCase(),
+      trackingNumber: generateTrackingNumber(order.order_id, order.order_date),
+      productImage: BOX_IMAGE,
+      status: getOrderStatusFromDB(order.status),
+      orderDate: orderDate.toLocaleDateString('en-US', { 
+        month: 'short', 
+        day: 'numeric', 
+        year: 'numeric' 
+      }),
+      orderTime: orderDate.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      price: order.prize || 22
+    };
+  };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
+          <div className="w-24 h-24 mx-auto mb-6 bg-slate-100 rounded-full flex items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Loading Orders...</h2>
+          <p className="text-slate-500">Please wait while we fetch your order information.</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div className="max-w-4xl mx-auto px-6 py-8">
+        <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
+          <div className="w-24 h-24 mx-auto mb-6 bg-red-50 rounded-full flex items-center justify-center">
+            <AlertCircle className="w-12 h-12 text-red-500" />
+          </div>
+          <h2 className="text-2xl font-bold text-slate-900 mb-2">Error Loading Orders</h2>
+          <p className="text-slate-500 mb-6">{error}</p>
+          <button 
+            onClick={fetchUserOrders}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+          >
+            Try Again
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // Show No Orders message if no orders exist
-  if (!hasOrders) {
+  if (orders.length === 0) {
     return (
       <div className="max-w-4xl mx-auto px-6 py-8">
         <div className="text-center py-16 bg-white rounded-xl border border-slate-100">
@@ -127,9 +167,52 @@ const OrderTracking = () => {
     );
   }
 
+  const orderDetails = getOrderDetails(selectedOrder);
+  const currentStepIndex = getCurrentStepIndex(orderDetails.status);
+
   return (
     <div className="max-w-7xl mx-auto px-6 py-8">
       <h1 className="text-3xl font-bold text-slate-900 mb-8">Order Tracking</h1>
+
+      {/* Order Selection */}
+      {orders.length > 1 && (
+        <div className="bg-white rounded-xl border border-slate-100 p-4 mb-8">
+          <label className="block text-sm font-medium text-slate-700 mb-2">
+            Select Order
+          </label>
+          <select
+            value={selectedOrder?.id}
+            onChange={(e) => setSelectedOrder(orders.find(o => o.id === parseInt(e.target.value)))}
+            className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {orders.map(order => (
+              <option key={order.id} value={order.id}>
+                Order {order.order_id} - {order.status}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* Cancellation Notice */}
+      {orderDetails.status === 'cancelled' && (
+        <div className="bg-red-50 border border-red-200 rounded-xl p-6 mb-8">
+          <div className="flex items-start gap-4">
+            <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
+              <X className="w-5 h-5 text-red-600" />
+            </div>
+            <div className="flex-1">
+              <h3 className="text-lg font-bold text-red-900 mb-2">Order Cancelled</h3>
+              <p className="text-red-700 mb-2">
+                This order has been cancelled due to: <span className="font-semibold">{orderDetails.cancellation_reason}</span>
+              </p>
+              {orderDetails.cancellation_description && (
+                <p className="text-red-600 text-sm">{orderDetails.cancellation_description}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Order Details Section */}
       <div className="bg-white rounded-xl border border-slate-100 p-6 mb-8">
@@ -173,52 +256,54 @@ const OrderTracking = () => {
       </div>
 
       {/* Tracking Progress Section */}
-      <div className="bg-white rounded-xl border border-slate-100 p-6 mb-8">
-        <h2 className="text-xl font-bold text-slate-900 mb-6">Tracking Progress</h2>
-        <div className="relative">
-          {/* Progress Line */}
-          <div className="absolute top-5 left-0 right-0 h-0.5 bg-slate-200"></div>
-          <div 
-            className="absolute top-5 left-0 h-0.5 bg-blue-600 transition-all duration-500"
-            style={{ width: `${(currentStepIndex / (trackingSteps.length - 1)) * 100}%` }}
-          ></div>
-          
-          {/* Tracking Steps */}
-          <div className="relative flex justify-between">
-            {trackingSteps.map((step, index) => {
-              const Icon = step.icon;
-              const isCompleted = index <= currentStepIndex;
-              const isCurrent = index === currentStepIndex;
-              
-              return (
-                <div key={step.key} className="flex flex-col items-center">
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                    isCompleted ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
-                  }`}>
-                    {isCompleted ? (
-                      <CheckCircle size={20} />
-                    ) : (
-                      <Circle size={20} />
+      {orderDetails.status !== 'cancelled' && (
+        <div className="bg-white rounded-xl border border-slate-100 p-6 mb-8">
+          <h2 className="text-xl font-bold text-slate-900 mb-6">Tracking Progress</h2>
+          <div className="relative">
+            {/* Progress Line */}
+            <div className="absolute top-5 left-0 right-0 h-0.5 bg-slate-200"></div>
+            <div 
+              className="absolute top-5 left-0 h-0.5 bg-blue-600 transition-all duration-500"
+              style={{ width: `${currentStepIndex >= 0 ? (currentStepIndex / (trackingSteps.length - 1)) * 100 : 0}%` }}
+            ></div>
+            
+            {/* Tracking Steps */}
+            <div className="relative flex justify-between">
+              {trackingSteps.map((step, index) => {
+                const Icon = step.icon;
+                const isCompleted = index <= currentStepIndex;
+                const isCurrent = index === currentStepIndex;
+                
+                return (
+                  <div key={step.key} className="flex flex-col items-center">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      isCompleted ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
+                    }`}>
+                      {isCompleted ? (
+                        <CheckCircle size={20} />
+                      ) : (
+                        <Circle size={20} />
+                      )}
+                    </div>
+                    <p className={`mt-2 text-sm font-medium ${
+                      isCompleted ? 'text-blue-600' : 'text-slate-400'
+                    }`}>
+                      {step.label}
+                    </p>
+                    {isCurrent && (
+                      <p className="mt-1 text-xs text-slate-500 text-center max-w-[100px]">
+                        {step.key === 'ordered' && `Order placed on ${orderDetails.orderDate} at ${orderDetails.orderTime}`}
+                        {step.key === 'dispatch' && 'Shipped via Express Delivery'}
+                        {step.key === 'delivered' && 'Delivered to your address'}
+                      </p>
                     )}
                   </div>
-                  <p className={`mt-2 text-sm font-medium ${
-                    isCompleted ? 'text-blue-600' : 'text-slate-400'
-                  }`}>
-                    {step.label}
-                  </p>
-                  {isCurrent && (
-                    <p className="mt-1 text-xs text-slate-500 text-center max-w-[100px]">
-                      {step.key === 'ordered' && `Order placed on ${orderDetails.orderDate} at ${orderDetails.orderTime}`}
-                      {step.key === 'dispatch' && 'Shipped via Express Delivery'}
-                      {step.key === 'delivered' && 'Delivered to your address'}
-                    </p>
-                  )}
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* You Might Also Like Section */}
       <div className="bg-white rounded-xl border border-slate-100 p-6">

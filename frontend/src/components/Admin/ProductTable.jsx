@@ -2,11 +2,14 @@ import React, { useState, useEffect } from 'react';
 import { SlidersHorizontal, Pencil, Trash2, ChevronRight, Plus } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../../utils/auth';
 import AddProductModal from './AddProductModal';
+import EditProductModal from './EditProductModal';
 
 const ProductTable = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     makeAuthenticatedRequest('http://localhost:5000/api/products')
@@ -30,6 +33,48 @@ const ProductTable = () => {
       .catch(err => {
         console.error('Error refreshing products:', err);
       });
+  };
+
+  // Handle delete product
+  const handleDeleteProduct = async (productId) => {
+    if (!window.confirm('Are you sure you want to delete this product?')) {
+      return;
+    }
+    
+    try {
+      const response = await makeAuthenticatedRequest(`http://localhost:5000/api/products/${productId}`, {
+        method: 'DELETE'
+      });
+      
+      // Remove product from local state
+      setProducts(products.filter(product => product.id !== productId));
+      
+      console.log('Product deleted successfully:', productId);
+    } catch (err) {
+      console.error('Error deleting product:', err);
+      alert('Failed to delete product. Please try again.');
+    }
+  };
+
+  // Handle edit product
+  const handleEditProduct = (product) => {
+    setSelectedProduct(product);
+    setIsEditModalOpen(true);
+  };
+
+  // Handle product updated
+  const handleProductUpdated = (response) => {
+    console.log('Product updated:', response);
+    // Refresh the products list
+    makeAuthenticatedRequest('http://localhost:5000/api/products')
+      .then(data => {
+        setProducts(data);
+      })
+      .catch(err => {
+        console.error('Error refreshing products:', err);
+      });
+    setIsEditModalOpen(false);
+    setSelectedProduct(null);
   };
 
   return (
@@ -59,7 +104,7 @@ const ProductTable = () => {
             <div key={index} className="p-4 border-b border-slate-100 last:border-b-0">
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-medium text-slate-900 text-sm">{product.name}</h3>
-                <span className="text-xs text-slate-400 font-mono">#{product.id}</span>
+                <span className="text-xs text-slate-400 font-mono">#{product.product_id}</span>
               </div>
               <div className="grid grid-cols-2 gap-2 text-xs">
                 <div>
@@ -67,28 +112,41 @@ const ProductTable = () => {
                   <span className="ml-1 font-medium text-slate-600">{product.size}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Qty:</span>
-                  <span className="ml-1 font-medium text-slate-600">{product.quantity}</span>
+                  <span className="text-slate-400">Packaging Qty:</span>
+                  <span className="ml-1 font-medium text-slate-600">{product.packaging_quantity}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Price:</span>
-                  <span className="ml-1 font-medium text-slate-600">{product.price}</span>
+                  <span className="text-slate-400">Purchase Price:</span>
+                  <span className="ml-1 font-medium text-slate-600">{product.purchase_price}</span>
                 </div>
                 <div>
-                  <span className="text-slate-400">Stock:</span>
-                  <span className="ml-1 font-medium text-slate-600">{product.stock}</span>
+                  <span className="text-slate-400">Quantity Sold:</span>
+                  <span className="ml-1 font-medium text-slate-600">{product.quantity_sold}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Current Stock:</span>
+                  <span className="ml-1 font-medium text-slate-600">{product.current_stock}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400">Restock Priority:</span>
+                  <span className="ml-1 font-medium text-slate-600">{product.restock_priority}</span>
                 </div>
               </div>
-              <div className="flex justify-between items-center mt-3 pt-3 border-t border-slate-50">
-                <span className="text-xs text-slate-400">{product.priority}</span>
-                <div className="flex gap-3">
-                  <button className="text-slate-400 hover:text-slate-900 transition-colors">
-                    <Pencil size={16} strokeWidth={2.5} />
-                  </button>
-                  <button className="text-slate-400 hover:text-red-600 transition-colors">
-                    <Trash2 size={16} strokeWidth={2.5} />
-                  </button>
-                </div>
+              <div className="flex justify-end gap-3 pt-3 border-t border-slate-50">
+                <button 
+                  onClick={() => handleEditProduct(product)}
+                  className="text-slate-400 hover:text-slate-900 transition-colors"
+                  title="Edit Product"
+                >
+                  <Pencil size={16} strokeWidth={2.5} />
+                </button>
+                <button 
+                  onClick={() => handleDeleteProduct(product.id)}
+                  className="text-slate-400 hover:text-red-600 transition-colors"
+                  title="Delete Product"
+                >
+                  <Trash2 size={16} strokeWidth={2.5} />
+                </button>
               </div>
             </div>
           ))}
@@ -114,19 +172,27 @@ const ProductTable = () => {
               {products.map((product, index) => (
                 <tr key={index} className="hover:bg-slate-50/30 transition-colors">
                   <td className="px-6 py-4 text-xs font-medium text-slate-600">{product.name}</td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-400">{product.id}</td>
+                  <td className="px-6 py-4 text-xs font-medium text-slate-400">{product.product_id}</td>
                   <td className="px-6 py-4 text-xs font-medium text-slate-400">{product.size}</td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-400 font-mono tracking-tighter">{product.quantity}</td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-400 font-mono tracking-tighter">{product.price}</td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-400 font-mono tracking-tighter">{product.sold}</td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-400 font-mono tracking-tighter">{product.stock}</td>
-                  <td className="px-6 py-4 text-xs font-medium text-slate-400">{product.priority}</td>
+                  <td className="px-6 py-4 text-xs font-medium text-slate-400 font-mono tracking-tighter">{product.packaging_quantity}</td>
+                  <td className="px-6 py-4 text-xs font-medium text-slate-400 font-mono tracking-tighter">{product.purchase_price}</td>
+                  <td className="px-6 py-4 text-xs font-medium text-slate-400 font-mono tracking-tighter">{product.quantity_sold}</td>
+                  <td className="px-6 py-4 text-xs font-medium text-slate-400 font-mono tracking-tighter">{product.current_stock}</td>
+                  <td className="px-6 py-4 text-xs font-medium text-slate-400">{product.restock_priority}</td>
                   <td className="px-6 py-4">
                     <div className="flex gap-4">
-                      <button className="text-slate-400 hover:text-slate-900 transition-colors">
+                      <button 
+                        onClick={() => handleEditProduct(product)}
+                        className="text-slate-400 hover:text-slate-900 transition-colors"
+                        title="Edit Product"
+                      >
                         <Pencil size={16} strokeWidth={2.5} />
                       </button>
-                      <button className="text-slate-400 hover:text-red-600 transition-colors">
+                      <button 
+                        onClick={() => handleDeleteProduct(product.id)}
+                        className="text-slate-400 hover:text-red-600 transition-colors"
+                        title="Delete Product"
+                      >
                         <Trash2 size={16} strokeWidth={2.5} />
                       </button>
                     </div>
@@ -154,6 +220,13 @@ const ProductTable = () => {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onProductAdded={handleProductAdded}
+      />
+
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onProductUpdated={handleProductUpdated}
+        product={selectedProduct}
       />
 
       <div className="h-10"></div>

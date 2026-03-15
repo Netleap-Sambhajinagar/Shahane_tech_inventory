@@ -1,5 +1,6 @@
 import React from 'react';
 import { Search, Bell, User } from 'lucide-react';
+import Notifications from './Notifications';
 
 const Header = ({ title, subtitle }) => {
   const admin = JSON.parse(localStorage.getItem('admin'));
@@ -12,13 +13,13 @@ const Header = ({ title, subtitle }) => {
       </div>
 
       <div className="flex items-center gap-3 sm:gap-6 flex-shrink-0">
+        <Notifications />
         <div className="flex items-center gap-2 sm:gap-4">
           <button className="p-2 text-slate-400 hover:text-slate-600 bg-white rounded-lg shadow-sm border border-slate-100">
             <Search size={18} className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button className="p-2 text-slate-400 hover:text-slate-600 bg-white rounded-lg shadow-sm border border-slate-100 relative">
             <Bell size={18} className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
           </button>
         </div>
 
