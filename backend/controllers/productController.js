@@ -37,3 +37,31 @@ exports.createProduct = async (req, res, next) => {
         next(err);
     }
 };
+
+// @desc    Update product
+// @route   PUT /api/products/:id
+exports.updateProduct = async (req, res, next) => {
+    const { product_id, name, size, packaging_quantity, purchase_price, old_price, min_order, delivery_date, image_url, description, current_stock, quantity_sold, restock_priority } = req.body;
+    try {
+        const [result] = await db.query(
+            'UPDATE products SET product_id = ?, name = ?, size = ?, packaging_quantity = ?, purchase_price = ?, old_price = ?, min_order = ?, delivery_date = ?, image_url = ?, description = ?, current_stock = ?, quantity_sold = ?, restock_priority = ? WHERE id = ?',
+            [product_id, name, size, packaging_quantity, purchase_price, old_price, min_order, delivery_date, image_url, description, current_stock, quantity_sold, restock_priority, req.params.id]
+        );
+        if (result.affectedRows === 0) return res.status(404).json({ message: 'Product not found' });
+        res.json({ message: 'Product updated successfully' });
+    } catch (err) {
+        next(err);
+    }
+};
+
+// @desc    Delete product
+// @route   DELETE /api/products/:id
+exports.deleteProduct = async (req, res, next) => {
+    try {
+        const [result] = await db.query('DELETE FROM products WHERE id = ?', [req.params.id]);
+        if (result.affectedRows === 0) return res.status(404).json({ message: 'Product not found' });
+        res.json({ message: 'Product deleted successfully' });
+    } catch (err) {
+        next(err);
+    }
+};
