@@ -36,8 +36,8 @@ const Sidebar = ({ activeTab, setActiveTab }) => {
 
       {/* Sidebar */}
       <div className={`
-        fixed lg:static inset-y-0 left-0 z-50
-        w-64 h-screen bg-white border-r border-slate-200 flex flex-col p-6
+        fixed top-0 left-0 z-40
+        w-64 h-screen bg-white border-r border-slate-200 flex flex-col p-6 pt-6
         transform transition-transform duration-300 ease-in-out
         ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>

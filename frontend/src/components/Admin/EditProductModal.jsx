@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Package, DollarSign, Calendar, Box } from 'lucide-react';
+import { X, Package, DollarSign, Calendar, Box, Upload, Image as ImageIcon } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../../utils/auth';
 
 const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
@@ -12,7 +12,7 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
     old_price: '',
     min_order: '',
     delivery_date: '',
-    image_url: '',
+    images: [],
     description: '',
     current_stock: '',
     quantity_sold: '',
@@ -20,9 +20,15 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [selectedMainImage, setSelectedMainImage] = useState(null);
+  const [selectedThumbnailImages, setSelectedThumbnailImages] = useState([]);
+  const [mainImagePreview, setMainImagePreview] = useState('');
+  const [thumbnailImagePreviews, setThumbnailImagePreviews] = useState([]);
 
   useEffect(() => {
     if (product && isOpen) {
+      const parsedImages = product.images ? (typeof product.images === 'string' ? JSON.parse(product.images) : product.images) : [];
       setFormData({
         product_id: product.product_id || '',
         name: product.name || '',
@@ -32,12 +38,18 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
         old_price: product.old_price || '',
         min_order: product.min_order || '',
         delivery_date: product.delivery_date || '',
-        image_url: product.image_url || '',
+        images: parsedImages,
         description: product.description || '',
         current_stock: product.current_stock || '',
         quantity_sold: product.quantity_sold || '',
         restock_priority: product.restock_priority || ''
       });
+      
+      // Set existing image previews
+      if (parsedImages.length > 0) {
+        setMainImagePreview(parsedImages[0] || '');
+        setThumbnailImagePreviews(parsedImages.slice(1));
+      }
     }
   }, [product, isOpen]);
 
@@ -46,6 +58,163 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
     setFormData(prev => ({
       ...prev,
       [name]: value
+    }));
+  };
+
+  const handleMainImageSelect = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    // Validate file
+    if (!file.type.startsWith('image/')) {
+      setError('Please select only an image file for main image');
+      return;
+    }
+    
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Main image size should be less than 5MB');
+      return;
+    }
+    
+    setSelectedMainImage(file);
+    setMainImagePreview(URL.createObjectURL(file));
+    setError('');
+  };
+
+  const handleThumbnailImagesSelect = (e) => {
+    const files = Array.from(e.target.files);
+    if (files.length === 0) return;
+    
+    // Validate each file
+    const validFiles = files.filter(file => {
+      if (!file.type.startsWith('image/')) {
+        setError('Please select only image files for thumbnails');
+        return false;
+      }
+      
+      if (file.size > 5 * 1024 * 1024) {
+        setError('Thumbnail image size should be less than 5MB');
+        return false;
+      }
+      
+      return true;
+    });
+    
+    if (validFiles.length === 0) return;
+    
+    // Limit to 4 thumbnail images
+    const limitedFiles = validFiles.slice(0, 4);
+    
+    setSelectedThumbnailImages(prev => [...prev, ...limitedFiles]);
+    
+    // Create previews
+    const newPreviews = limitedFiles.map(file => URL.createObjectURL(file));
+    setThumbnailImagePreviews(prev => [...prev, ...newPreviews]);
+    setError('');
+  };
+
+  const handleMainImageUpload = async () => {
+    if (!selectedMainImage) {
+      setError('Please select a main image');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      formData.append('images', selectedMainImage);
+
+      const response = await fetch('http://localhost:5000/api/products/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload main image');
+      }
+
+      const result = await response.json();
+      
+      // Update main image in existing images array
+      setFormData(prev => ({
+        ...prev,
+        images: [result.imageUrls[0], ...prev.images.slice(1)]
+      }));
+      
+      setUploading(false);
+    } catch (err) {
+      setError(err.message || 'Failed to upload main image');
+      setUploading(false);
+    }
+  };
+
+  const handleThumbnailImagesUpload = async () => {
+    if (selectedThumbnailImages.length === 0) {
+      setError('Please select at least one thumbnail image');
+      return;
+    }
+
+    setUploading(true);
+    setError('');
+
+    try {
+      const formData = new FormData();
+      selectedThumbnailImages.forEach((image, index) => {
+        formData.append('images', image);
+      });
+
+      const response = await fetch('http://localhost:5000/api/products/upload', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
+        },
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to upload thumbnail images');
+      }
+
+      const result = await response.json();
+      
+      // Update thumbnail images in existing array
+      setFormData(prev => ({
+        ...prev,
+        images: [prev.images[0] || '', ...result.imageUrls]
+      }));
+      
+      setUploading(false);
+    } catch (err) {
+      setError(err.message || 'Failed to upload thumbnail images');
+      setUploading(false);
+    }
+  };
+
+  const removeThumbnailImage = (index) => {
+    setSelectedThumbnailImages(prev => prev.filter((_, i) => i !== index));
+    setThumbnailImagePreviews(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const clearMainImage = () => {
+    setSelectedMainImage(null);
+    setMainImagePreview('');
+    setFormData(prev => ({
+      ...prev,
+      images: ['', ...prev.images.slice(1)]
+    }));
+  };
+
+  const clearAllThumbnailImages = () => {
+    setSelectedThumbnailImages([]);
+    setThumbnailImagePreviews([]);
+    setFormData(prev => ({
+      ...prev,
+      images: [prev.images[0] || '']
     }));
   };
 
@@ -260,20 +429,188 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
                 placeholder="1-10 (1 = highest priority)"
               />
             </div>
+          </div>
 
-            {/* Image URL */}
-            <div className="md:col-span-2">
+          {/* Image Management Section */}
+          <div className="mt-6 space-y-6">
+            <h3 className="text-lg font-semibold text-slate-900">Product Images</h3>
+            
+            {/* Main Image Section */}
+            <div>
               <label className="block text-sm font-medium text-slate-700 mb-2">
-                Image URL
+                Main Product Image
               </label>
-              <input
-                type="text"
-                name="image_url"
-                value={formData.image_url}
-                onChange={handleInputChange}
-                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="https://example.com/image.jpg"
-              />
+              <div className="space-y-3">
+                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                  {mainImagePreview ? (
+                    <div className="space-y-3">
+                      <div className="flex justify-center">
+                        <div className="relative group">
+                          <img 
+                            src={mainImagePreview} 
+                            alt="Main product preview" 
+                            className="h-32 w-32 object-cover rounded-lg"
+                          />
+                          <button
+                            type="button"
+                            onClick={clearMainImage}
+                            className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex justify-center gap-2">
+                        {selectedMainImage && (
+                          <button
+                            type="button"
+                            onClick={handleMainImageUpload}
+                            disabled={uploading}
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
+                          >
+                            {uploading ? (
+                              <>
+                                <div className="w-3 h-3 border-2 border-white border-t-transparent animate-spin"></div>
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <Upload size={16} />
+                                Upload New Main Image
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <ImageIcon size={48} className="mx-auto text-slate-400" />
+                      <p className="text-sm text-slate-600">Click to select new main product image</p>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleMainImageSelect}
+                        className="hidden"
+                        id="edit-main-image-upload"
+                      />
+                      <label
+                        htmlFor="edit-main-image-upload"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer text-sm"
+                      >
+                        <Upload size={16} />
+                        Choose New Main Image
+                      </label>
+                      <p className="text-xs text-slate-500">PNG, JPG, GIF up to 5MB</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Show current main image URL */}
+                {formData.images.length > 0 && formData.images[0] && !selectedMainImage && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      Current main image: {formData.images[0]}
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Thumbnail Images Section */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 mb-2">
+                Thumbnail Images (Optional)
+              </label>
+              <div className="space-y-3">
+                <div className="border-2 border-dashed border-slate-300 rounded-lg p-4 text-center hover:border-blue-400 transition-colors">
+                  {thumbnailImagePreviews.length > 0 || (formData.images.length > 1 && !selectedThumbnailImages.length) ? (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-4 gap-3">
+                        {/* Show existing thumbnails */}
+                        {(formData.images.length > 1 ? formData.images.slice(1) : []).map((url, index) => (
+                          <div key={`existing-${index}`} className="relative group">
+                            <img 
+                              src={url} 
+                              alt={`Existing thumbnail ${index + 1}`} 
+                              className="h-16 w-16 object-cover rounded-lg"
+                            />
+                          </div>
+                        ))}
+                        {/* Show new thumbnail previews */}
+                        {thumbnailImagePreviews.map((preview, index) => (
+                          <div key={`new-${index}`} className="relative group">
+                            <img 
+                              src={preview} 
+                              alt={`New thumbnail preview ${index + 1}`} 
+                              className="h-16 w-16 object-cover rounded-lg"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => removeThumbnailImage(index)}
+                              className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex justify-center gap-2">
+                        {selectedThumbnailImages.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={handleThumbnailImagesUpload}
+                            disabled={uploading}
+                            className="px-3 py-1.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
+                          >
+                            {uploading ? (
+                              <>
+                                <div className="w-3 h-3 border-2 border-white border-t-transparent animate-spin"></div>
+                                Uploading...
+                              </>
+                            ) : (
+                              <>
+                                <Upload size={16} />
+                                Upload New Thumbnails
+                              </>
+                            )}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <ImageIcon size={48} className="mx-auto text-slate-400" />
+                      <p className="text-sm text-slate-600">Click to select new thumbnail images (max 4)</p>
+                      <input
+                        type="file"
+                        multiple
+                        accept="image/*"
+                        onChange={handleThumbnailImagesSelect}
+                        className="hidden"
+                        id="edit-thumbnail-images-upload"
+                      />
+                      <label
+                        htmlFor="edit-thumbnail-images-upload"
+                        className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer text-sm"
+                      >
+                        <Upload size={16} />
+                        Choose New Thumbnail Images
+                      </label>
+                      <p className="text-xs text-slate-500">PNG, JPG, GIF up to 5MB each</p>
+                    </div>
+                  )}
+                </div>
+                
+                {/* Show current thumbnail image URLs */}
+                {formData.images.length > 1 && !selectedThumbnailImages.length && (
+                  <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      Current thumbnails: {formData.images.length - 1} image(s)
+                    </p>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Description */}

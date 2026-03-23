@@ -16,18 +16,70 @@ const ProductDetails = () => {
   useEffect(() => {
     setLoading(true);
     fetch(`http://localhost:5000/api/products/${id}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`HTTP error! status: ${res.status}`);
+        }
+        return res.json();
+      })
       .then(data => {
+        console.log('Product data received:', data);
+        console.log('Images from DB:', data.images);
+        
+        // Handle new main_image and thumbnail_images fields, with backward compatibility
+        let fullImageUrl = BOX_IMAGE;
+        let allImages = [];
+        
+        if (data.main_image) {
+          // New format: use main_image and thumbnail_images
+          fullImageUrl = `${data.main_image}?t=${Date.now()}`;
+          allImages = [fullImageUrl];
+          
+          if (data.thumbnail_images) {
+            try {
+              const thumbnailArray = JSON.parse(data.thumbnail_images);
+              thumbnailArray.forEach(thumb => {
+                allImages.push(`${thumb}?t=${Date.now()}`);
+              });
+            } catch (e) {
+              console.warn('Failed to parse thumbnail_images:', e);
+            }
+          }
+        } else if (data.images) {
+          // Backward compatibility: old images array format
+          try {
+            const imagesArray = JSON.parse(data.images);
+            if (imagesArray.length > 0) {
+              fullImageUrl = `${imagesArray[0]}?t=${Date.now()}`;
+              allImages = imagesArray.map(img => `${img}?t=${Date.now()}`);
+            }
+          } catch (e) {
+            // If JSON parsing fails, fallback to old field
+            if (data.image_url) {
+              fullImageUrl = `${data.image_url}?t=${Date.now()}`;
+              allImages = [fullImageUrl];
+            }
+          }
+        } else if (data.image_url) {
+          // Fallback to old image_url field
+          fullImageUrl = `${data.image_url}?t=${Date.now()}`;
+          allImages = [fullImageUrl];
+        }
+        
+        console.log('Full image URL:', fullImageUrl);
+        console.log('All images:', allImages);
+        
         setProduct({
             id: data.id,
-            product_id: data.product_id, // Include product_id field
+            product_id: data.product_id,
             name: data.name,
             size: data.size,
             price: data.purchase_price,
             oldPrice: data.old_price,
             minOrder: data.min_order,
             deliveryDate: data.delivery_date,
-            image: data.image_url || BOX_IMAGE,
+            image: fullImageUrl,
+            images: allImages,
             description: data.description
         });
         if (data.min_order) setQuantity(data.min_order);
@@ -66,19 +118,37 @@ const ProductDetails = () => {
         {/* Left: Gallery */}
         <div className="space-y-4">
           <div className="aspect-[4/3] rounded-2xl border border-slate-100 overflow-hidden bg-slate-50">
-            <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            <img 
+              src={product.image} 
+              alt={product.name} 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                console.error('Image failed to load:', product.image);
+                e.target.src = BOX_IMAGE;
+              }}
+            />
           </div>
           <div className="grid grid-cols-3 gap-2 sm:gap-4">
-             {/* Using the same thumbnails image for all slots for demo */}
-            <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
-              <img src={product.image} alt="Thumbnail 1" className="w-full h-full object-cover" />
-            </div>
-            <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
-              <img src={product.image} alt="Thumbnail 2" className="w-full h-full object-cover" />
-            </div>
-            <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
-              <img src={product.image} alt="Thumbnail 3" className="w-full h-full object-cover" />
-            </div>
+            {product.images && product.images.length > 0 ? (
+              product.images.map((img, index) => (
+                <div key={index} className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
+                  <img src={img} alt={`Thumbnail ${index + 1}`} className="w-full h-full object-cover" />
+                </div>
+              ))
+            ) : (
+              // Fallback to single image or placeholder
+              <>
+                <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
+                  <img src={product.image} alt="Thumbnail 1" className="w-full h-full object-cover" />
+                </div>
+                <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
+                  <img src={product.image} alt="Thumbnail 2" className="w-full h-full object-cover" />
+                </div>
+                <div className="aspect-square rounded-xl border border-slate-200 overflow-hidden cursor-pointer hover:border-blue-500 transition-colors">
+                  <img src={product.image} alt="Thumbnail 3" className="w-full h-full object-cover" />
+                </div>
+              </>
+            )}
           </div>
         </div>
 

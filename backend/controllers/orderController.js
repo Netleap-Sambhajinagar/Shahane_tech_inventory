@@ -36,9 +36,14 @@ exports.createOrder = async (req, res, next) => {
     console.log('=== ORDER CREATION DEBUG ===');
     console.log('Request body:', JSON.stringify(req.body, null, 2));
     console.log('Request headers:', req.headers);
+    console.log('Authenticated user:', req.user);
     console.log('==============================');
     
-    const { order_id, customer_id, city, state, customer_type, order_date, prize, status, items } = req.body;
+    // Get user information from authenticated request
+    const userId = req.user.id;
+    const userEmail = req.user.email;
+    
+    const { order_id, city, state, customer_type, order_date, prize, status, items } = req.body;
     
     // Validate required fields
     if (!items || !Array.isArray(items) || items.length === 0) {
@@ -52,8 +57,8 @@ exports.createOrder = async (req, res, next) => {
     // Generate order_id if not provided
     const generatedOrderId = order_id || `ORD-${Date.now()}`;
     
-    // Ensure all NOT NULL fields have values
-    const finalCustomerId = customer_id || `CUST${Date.now()}`;
+    // Use authenticated user's ID as customer_id
+    const finalCustomerId = `USER${userId}`;
     const finalCity = city || 'Mumbai';
     const finalState = state || 'Maharashtra';
     const finalCustomerType = customer_type || 'Regular';
@@ -178,10 +183,11 @@ exports.createOrder = async (req, res, next) => {
         if (io) {
             const notificationData = {
                 type: 'new_order',
-                message: `New order ${generatedOrderId} received from ${finalCity}`,
+                message: `New order ${generatedOrderId} received from user ${userEmail}`,
                 order: {
                     order_id: generatedOrderId,
                     customer_id: finalCustomerId,
+                    customer_email: userEmail,
                     city: finalCity,
                     state: finalState,
                     customer_type: finalCustomerType,

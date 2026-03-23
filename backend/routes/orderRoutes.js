@@ -4,7 +4,7 @@ const { getAllOrders, createOrder, updateOrder, deleteOrder, dispatchProduct } =
 const { protect } = require('../middleware/auth');
 
 router.get('/', protect, getAllOrders);
-router.post('/', createOrder);
+router.post('/', protect, createOrder);
 router.put('/:orderId/dispatch/:productId', protect, dispatchProduct); // Put this before /:id
 router.put('/:id', protect, updateOrder);
 router.delete('/:id', protect, deleteOrder);

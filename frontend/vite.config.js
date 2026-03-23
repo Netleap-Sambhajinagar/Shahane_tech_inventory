@@ -11,5 +11,13 @@ export default defineConfig({
       '@admin': path.resolve(__dirname, './src/components/Admin'),
       '@': path.resolve(__dirname, './src')
     }
+  },
+  server: {
+    proxy: {
+      '/uploads': {
+        target: 'http://localhost:5000',
+        changeOrigin: true
+      }
+    }
   }
 })

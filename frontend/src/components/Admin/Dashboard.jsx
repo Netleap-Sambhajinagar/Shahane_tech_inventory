@@ -53,7 +53,7 @@ function AdminDashboard() {
   return (
     <div className="flex min-h-screen relative">
       <Sidebar activeTab={activeTab} setActiveTab={handleTabChange} />
-      <div className="flex-1 flex flex-col lg:ml-0">
+      <div className="flex-1 flex flex-col lg:ml-64 pt-20">
         <Header 
         title={title} 
         subtitle={subtitle} 
@@ -63,8 +63,8 @@ function AdminDashboard() {
         toggleSearch={toggleSearch}
         activeTab={activeTab}
       />
-        <main className="flex-1 overflow-x-auto">
-          <div className="min-w-0">
+        <main className="flex-1 overflow-auto">
+          <div className="p-6 min-w-full">
             {activeTab === 'dashboard' && <SalesDashboard />}
             {activeTab === 'products' && <ProductTable globalSearchTerm={globalSearchTerm} />}
             {activeTab === 'orders' && <OrdersTable globalSearchTerm={globalSearchTerm} />}

@@ -16,10 +16,17 @@ const Checkout = () => {
   const handlePlaceOrder = async () => {
     if (cartItems.length === 0) return;
 
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login to place an order');
+      navigate('/login');
+      return;
+    }
+
     try {
-      // Create order data
+      // Create order data (customer_id will be set by backend from authenticated user)
       const orderData = {
-        customer_id: `CUST${Date.now()}`, // Generate customer ID
         customer_type: 'Regular',
         city: 'Mumbai', // Default city
         state: 'Maharashtra', // Default state
@@ -39,7 +46,7 @@ const Checkout = () => {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+          'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify(orderData)
       });
@@ -70,6 +77,15 @@ const Checkout = () => {
         });
       } else {
         const errorData = await response.json();
+        
+        // Handle authentication errors
+        if (response.status === 401) {
+          alert('Your session has expired. Please login again.');
+          localStorage.removeItem('token');
+          navigate('/login');
+          return;
+        }
+        
         alert('Failed to place order: ' + (errorData.message || 'Unknown error'));
       }
     } catch (error) {

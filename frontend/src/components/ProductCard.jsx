@@ -18,6 +18,19 @@ const ProductCard = ({ id, product_id, name, size, price, oldPrice, minOrder, de
           src={image} 
           alt={name} 
           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => {
+            console.error('ProductCard image failed to load:', image);
+            // Hide the broken image and show background
+            e.target.style.display = 'none';
+            // Add a placeholder text or icon
+            const placeholder = document.createElement('div');
+            placeholder.className = 'absolute inset-0 flex items-center justify-center text-slate-400 text-sm';
+            placeholder.innerHTML = 'No Image';
+            e.target.parentElement.appendChild(placeholder);
+          }}
+          onLoad={() => {
+            console.log('ProductCard image loaded successfully:', image);
+          }}
         />
       </div>
       

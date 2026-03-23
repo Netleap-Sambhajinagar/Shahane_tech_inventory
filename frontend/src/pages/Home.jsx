@@ -27,17 +27,43 @@ const Home = () => {
     fetch('http://localhost:5000/api/products')
       .then(res => res.json())
       .then(data => {
-        const mappedData = data.map(p => ({
-          id: p.id,
-          product_id: p.product_id,
-          name: p.name,
-          size: p.size,
-          price: p.purchase_price,
-          oldPrice: p.old_price,
-          minOrder: p.min_order,
-          deliveryDate: p.delivery_date,
-          image: p.image_url || BOX_IMAGE
-        }));
+        const mappedData = data.map(p => {
+          // Handle new main_image field, fallback to old images field, then image_url
+          let imageUrl = BOX_IMAGE;
+          
+          if (p.main_image) {
+            // New format: use main_image field
+            imageUrl = `${p.main_image}?t=${Date.now()}`;
+          } else if (p.images) {
+            // Backward compatibility: old images array format
+            try {
+              const imagesArray = JSON.parse(p.images);
+              if (imagesArray.length > 0) {
+                imageUrl = `${imagesArray[0]}?t=${Date.now()}`;
+              }
+            } catch (e) {
+              // If JSON parsing fails, fallback to old field
+              if (p.image_url) {
+                imageUrl = `${p.image_url}?t=${Date.now()}`;
+              }
+            }
+          } else if (p.image_url) {
+            // Fallback to old image_url field
+            imageUrl = `${p.image_url}?t=${Date.now()}`;
+          }
+          
+          return {
+            id: p.id,
+            product_id: p.product_id,
+            name: p.name,
+            size: p.size,
+            price: p.purchase_price,
+            oldPrice: p.old_price,
+            minOrder: p.min_order,
+            deliveryDate: p.delivery_date,
+            image: imageUrl
+          };
+        });
         setProducts(mappedData);
         setLoading(false);
       })
@@ -52,17 +78,43 @@ const Home = () => {
     fetch(`http://localhost:5000/api/products/search?q=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => {
-        const mappedData = data.map(p => ({
-          id: p.id,
-          product_id: p.product_id,
-          name: p.name,
-          size: p.size,
-          price: p.purchase_price,
-          oldPrice: p.old_price,
-          minOrder: p.min_order,
-          deliveryDate: p.delivery_date,
-          image: p.image_url || BOX_IMAGE
-        }));
+        const mappedData = data.map(p => {
+          // Handle new main_image field, fallback to old images field, then image_url
+          let imageUrl = BOX_IMAGE;
+          
+          if (p.main_image) {
+            // New format: use main_image field
+            imageUrl = `${p.main_image}?t=${Date.now()}`;
+          } else if (p.images) {
+            // Backward compatibility: old images array format
+            try {
+              const imagesArray = JSON.parse(p.images);
+              if (imagesArray.length > 0) {
+                imageUrl = `${imagesArray[0]}?t=${Date.now()}`;
+              }
+            } catch (e) {
+              // If JSON parsing fails, fallback to old field
+              if (p.image_url) {
+                imageUrl = `${p.image_url}?t=${Date.now()}`;
+              }
+            }
+          } else if (p.image_url) {
+            // Fallback to old image_url field
+            imageUrl = `${p.image_url}?t=${Date.now()}`;
+          }
+          
+          return {
+            id: p.id,
+            product_id: p.product_id,
+            name: p.name,
+            size: p.size,
+            price: p.purchase_price,
+            oldPrice: p.old_price,
+            minOrder: p.min_order,
+            deliveryDate: p.delivery_date,
+            image: imageUrl
+          };
+        });
         setProducts(mappedData);
         setLoading(false);
       })

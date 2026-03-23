@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { SlidersHorizontal, Pencil, Trash2, ChevronRight, Plus, Search } from 'lucide-react';
+import { SlidersHorizontal, Pencil, Trash2, ChevronRight, Plus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../../utils/auth';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
@@ -12,6 +12,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
+  const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   useEffect(() => {
     makeAuthenticatedRequest('http://localhost:5000/api/products')
@@ -125,6 +126,56 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
     }
   };
 
+  // Sorting functions
+  const handleSort = (key) => {
+    let direction = 'asc';
+    if (sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const getSortIcon = (key) => {
+    if (sortConfig.key !== key) {
+      return <ArrowUpDown size={14} className="w-3.5 h-3.5" />;
+    }
+    return sortConfig.direction === 'asc' 
+      ? <ArrowUp size={14} className="w-3.5 h-3.5" />
+      : <ArrowDown size={14} className="w-3.5 h-3.5" />;
+  };
+
+  // Apply sorting to filtered products
+  const sortedProducts = React.useMemo(() => {
+    let sortableProducts = [...filteredProducts];
+    
+    if (sortConfig.key) {
+      sortableProducts.sort((a, b) => {
+        let aValue = a[sortConfig.key];
+        let bValue = b[sortConfig.key];
+        
+        // Handle numeric values for price
+        if (sortConfig.key === 'purchase_price') {
+          aValue = parseFloat(aValue) || 0;
+          bValue = parseFloat(bValue) || 0;
+        } else {
+          // Handle text values for size and others
+          aValue = aValue?.toString().toLowerCase() || '';
+          bValue = bValue?.toString().toLowerCase() || '';
+        }
+        
+        if (aValue < bValue) {
+          return sortConfig.direction === 'asc' ? -1 : 1;
+        }
+        if (aValue > bValue) {
+          return sortConfig.direction === 'asc' ? 1 : -1;
+        }
+        return 0;
+      });
+    }
+    
+    return sortableProducts;
+  }, [filteredProducts, sortConfig]);
+
   // Display the current search term in empty state
   const displaySearchTerm = globalSearchTerm || searchTerm;
 
@@ -135,11 +186,27 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
           <button className="p-2 bg-white border border-slate-200 rounded-lg text-slate-600 hover:bg-slate-50">
             <SlidersHorizontal size={16} className="w-4 h-4" />
           </button>
-          <button className="px-3 sm:px-5 py-1.5 bg-white border border-slate-200 rounded-full text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-50">
+          <button 
+            onClick={() => handleSort('size')}
+            className={`px-3 sm:px-5 py-1.5 border rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 ${
+              sortConfig.key === 'size' 
+                ? 'bg-blue-50 border-blue-200 text-blue-600' 
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+          >
             Size
+            {getSortIcon('size')}
           </button>
-          <button className="px-3 sm:px-5 py-1.5 bg-white border border-slate-200 rounded-full text-xs sm:text-sm font-medium text-slate-600 hover:bg-slate-50">
+          <button 
+            onClick={() => handleSort('purchase_price')}
+            className={`px-3 sm:px-5 py-1.5 border rounded-full text-xs sm:text-sm font-medium transition-colors flex items-center gap-1 ${
+              sortConfig.key === 'purchase_price' 
+                ? 'bg-blue-50 border-blue-200 text-blue-600' 
+                : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'
+            }`}
+          >
             Price
+            {getSortIcon('purchase_price')}
           </button>
           {/* Search Input */}
           <div className="relative">
@@ -168,7 +235,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
       <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
         {/* Mobile Card View */}
         <div className="lg:hidden">
-          {filteredProducts.length === 0 ? (
+          {sortedProducts.length === 0 ? (
             <div className="p-8 text-center text-slate-400">
               <Search size={48} className="w-12 h-12 mx-auto mb-4 text-slate-300" />
               <p className="text-lg font-medium mb-2">No products found</p>
@@ -187,7 +254,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
               </button>
             </div>
           ) : (
-            filteredProducts.map((product, index) => (
+            sortedProducts.map((product, index) => (
             <div key={index} className="p-4 border-b border-slate-100 last:border-b-0">
               <div className="flex justify-between items-start mb-3">
                 <h3 className="font-medium text-slate-900 text-sm">{product.name}</h3>
@@ -257,7 +324,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {filteredProducts.length === 0 ? (
+              {sortedProducts.length === 0 ? (
                 <tr>
                   <td colSpan="9" className="px-6 py-12">
                     <div className="text-center">
@@ -280,7 +347,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
                   </td>
                 </tr>
               ) : (
-                filteredProducts.map((product, index) => (
+                sortedProducts.map((product, index) => (
                 <tr key={index} className="hover:bg-slate-50/30 transition-colors">
                   <td className="px-6 py-4 text-xs font-medium text-slate-600">{product.name}</td>
                   <td className="px-6 py-4 text-xs font-medium text-slate-400">{product.product_id}</td>

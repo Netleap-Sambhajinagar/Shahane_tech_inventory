@@ -34,7 +34,7 @@ const Header = ({ title, subtitle, globalSearchTerm, onGlobalSearch, isSearchOpe
   };
 
   return (
-    <header className="flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-8 py-4 sm:py-6 bg-transparent gap-4 sm:gap-0">
+    <header className="fixed top-0 left-64 right-0 z-50 flex flex-col sm:flex-row sm:items-center justify-between px-4 sm:px-8 py-4 sm:py-6 bg-white border-b border-slate-200 gap-4 sm:gap-0">
       <div className="min-w-0 flex-1">
         <h2 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">{title}</h2>
         <p className="text-xs sm:text-sm text-slate-500 truncate">{subtitle}</p>
