@@ -15,7 +15,11 @@ const app = express();
 const server = createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ["http://localhost:5173", "http://localhost:5174"], // Allow both admin and customer frontends
+        origin: [
+            "http://localhost:5173", 
+            "http://localhost:5174",
+            "https://your-vercel-app-url.vercel.app"
+        ],
         methods: ["GET", "POST"]
     }
 });
@@ -26,7 +30,11 @@ app.use(helmet({
 }));
 app.use(morgan('dev'));
 app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:5174"],
+  origin: [
+    "http://localhost:5173", 
+    "http://localhost:5174",
+    "https://your-vercel-app-url.vercel.app"
+  ],
   credentials: true
 }));
 app.use(express.json());
