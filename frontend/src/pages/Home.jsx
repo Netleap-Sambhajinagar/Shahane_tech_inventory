@@ -24,7 +24,8 @@ const Home = () => {
 
   const fetchAllProducts = () => {
     setLoading(true);
-    fetch('http://localhost:5000/api/products')
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    fetch(`${API_BASE_URL}/api/products`)
       .then(res => res.json())
       .then(data => {
         const mappedData = data.map(p => {
@@ -75,7 +76,8 @@ const Home = () => {
 
   const fetchSearchResults = (query) => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/products/search?q=${encodeURIComponent(query)}`)
+    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    fetch(`${API_BASE_URL}/api/products/search?q=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => {
         const mappedData = data.map(p => {

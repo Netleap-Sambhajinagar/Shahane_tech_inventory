@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Bell, X, Package, ShoppingCart, AlertTriangle } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../../utils/auth';
 import { io } from 'socket.io-client';
+import { getApiUrl } from '../../utils/api';
 
 const Notifications = () => {
   const [notifications, setNotifications] = useState([]);
@@ -11,7 +12,7 @@ const Notifications = () => {
   // Manual check function that can be called from other components
   const manualCheckForNewOrders = async () => {
     try {
-      const orders = await makeAuthenticatedRequest('http://localhost:5000/api/orders');
+      const orders = await makeAuthenticatedRequest('/api/orders');
       const seenOrderIds = JSON.parse(localStorage.getItem('seenOrderIds') || '[]');
       
       // Find orders that haven't been seen yet
@@ -64,7 +65,7 @@ const Notifications = () => {
     window.triggerNotificationCheck = manualCheckForNewOrders;
     
     // Listen for real-time notifications via Socket.io
-    const socket = io('http://localhost:5000', {
+    const socket = io(getApiUrl(), {
       auth: {
         token: localStorage.getItem('adminToken')
       }
@@ -116,7 +117,7 @@ const Notifications = () => {
     // Check for new orders every 30 seconds (fallback)
     const checkForNewOrders = async () => {
       try {
-        const orders = await makeAuthenticatedRequest('http://localhost:5000/api/orders');
+        const orders = await makeAuthenticatedRequest('/api/orders');
         const lastCheckedTime = localStorage.getItem('lastOrderCheck');
         
         // Get the latest order IDs from localStorage to track what we've already seen

@@ -5,6 +5,7 @@ import {
     PieChart, Pie, Cell, Legend,
     AreaChart, Area, CartesianGrid,
 } from 'recharts';
+import { getApiUrl } from '../../utils/api';
 
 const fmt = (n) => {
     if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(2)}M`;
@@ -31,7 +32,7 @@ const SalesDashboard = () => {
             try {
                 // 1. Fetch live SQL data from API
                 const token = localStorage.getItem('adminToken');
-                const apiRes = await fetch('http://localhost:5000/api/orders', {
+                const apiRes = await fetch(getApiUrl('/api/orders'), {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 

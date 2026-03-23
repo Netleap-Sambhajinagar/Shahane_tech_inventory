@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SlidersHorizontal, Pencil, Trash2, Truck, ChevronRight, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../../utils/auth';
+import { getApiUrl } from '../../utils/api';
 
 const OrdersTable = ({ globalSearchTerm = '' }) => {
   const [orders, setOrders] = useState([]);
@@ -25,7 +26,7 @@ const OrdersTable = ({ globalSearchTerm = '' }) => {
       return;
     }
     
-    const dispatchUrl = `http://localhost:5000/api/orders/${orderId}/dispatch/${productId}`;
+    const dispatchUrl = getApiUrl(`/api/orders/${orderId}/dispatch/${productId}`);
     console.log('Dispatch URL:', dispatchUrl);
     
     try {
@@ -37,7 +38,7 @@ const OrdersTable = ({ globalSearchTerm = '' }) => {
       console.log('Dispatch response:', response);
       
       // Refresh orders to show updated inventory
-      makeAuthenticatedRequest('http://localhost:5000/api/orders')
+      makeAuthenticatedRequest('/api/orders')
         .then(data => {
           setOrders(data);
           setError(null);
@@ -47,7 +48,7 @@ const OrdersTable = ({ globalSearchTerm = '' }) => {
         });
       
       // Also refresh products to show updated inventory
-      makeAuthenticatedRequest('http://localhost:5000/api/products')
+      makeAuthenticatedRequest('/api/products')
         .then(data => {
           // Update products in admin panel if needed
           console.log('Products refreshed:', data);
@@ -72,7 +73,7 @@ const OrdersTable = ({ globalSearchTerm = '' }) => {
     }
     
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:5000/api/orders/${orderId}`, {
+      const response = await makeAuthenticatedRequest(`/api/orders/${orderId}`, {
         method: 'DELETE'
       });
       
@@ -115,7 +116,7 @@ const OrdersTable = ({ globalSearchTerm = '' }) => {
     console.log('================================');
 
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:5000/api/orders/${selectedOrder.id}`, {
+      const response = await makeAuthenticatedRequest(`/api/orders/${selectedOrder.id}`, {
         method: 'PUT',
         body: JSON.stringify({ 
           status: 'Cancelled',
@@ -151,7 +152,7 @@ const OrdersTable = ({ globalSearchTerm = '' }) => {
     
     // Force fresh fetch by adding timestamp
     const timestamp = new Date().getTime();
-    makeAuthenticatedRequest(`http://localhost:5000/api/orders?t=${timestamp}`)
+    makeAuthenticatedRequest(`/api/orders?t=${timestamp}`)
       .then(data => {
         console.log('Orders fetched successfully:', data);
         console.log('Order data structure check:');
@@ -225,7 +226,7 @@ const OrdersTable = ({ globalSearchTerm = '' }) => {
   useEffect(() => {
     const interval = setInterval(() => {
       console.log('Auto-refreshing orders...');
-      makeAuthenticatedRequest('http://localhost:5000/api/orders')
+      makeAuthenticatedRequest('/api/orders')
         .then(data => {
           setOrders(data);
           setFilteredOrders(data);

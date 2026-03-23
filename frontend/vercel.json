@@ -16,6 +16,6 @@
     }
   ],
   "env": {
-    "VITE_API_URL": "https://your-backend-url.onrender.com"
+    "VITE_API_URL": "https://shahane-tech-inventory.onrender.com"
   }
 }

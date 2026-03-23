@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../../utils/api';
 import { ShieldPlus, Mail, Lock, User, ArrowRight } from 'lucide-react';
 
 const AdminSignup = () => {
@@ -16,7 +17,7 @@ const AdminSignup = () => {
   const handleSignup = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/admins/register', {
+      const res = await fetch(getApiUrl('/api/admins/register'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

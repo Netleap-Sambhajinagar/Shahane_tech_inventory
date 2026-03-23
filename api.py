@@ -1,4 +1,5 @@
 import contextlib
+import os
 import chromadb
 from chromadb.utils import embedding_functions
 
@@ -15,12 +16,10 @@ logging.getLogger("huggingface_hub").setLevel(logging.ERROR)
 logging.getLogger("sentence_transformers").setLevel(logging.ERROR)
 logging.getLogger("transformers").setLevel(logging.ERROR)
 
-CHROMA_DATA_PATH = "./chroma_data"
-COLLECTION_NAME = "Portfolio_website"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
-
-
-QA_MODEL = "deepset/roberta-base-squad2"
+CHROMA_DATA_PATH = os.environ.get("CHROMA_DATA_PATH", "./chroma_data")
+COLLECTION_NAME = os.environ.get("COLLECTION_NAME", "Portfolio_website")
+EMBEDDING_MODEL = os.environ.get("EMBEDDING_MODEL", "all-MiniLM-L6-v2")
+QA_MODEL = os.environ.get("QA_MODEL", "deepset/roberta-base-squad2")
 
 
 state: dict = {}
@@ -63,7 +62,7 @@ app = FastAPI(title="Website RAG Agent API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # In production, specify your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

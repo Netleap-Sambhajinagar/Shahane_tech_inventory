@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Package, DollarSign, Calendar, Box, Upload, Image as ImageIcon } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../../utils/auth';
+import { getApiUrl } from '../../utils/api';
 
 const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
   const [formData, setFormData] = useState({
@@ -126,7 +127,7 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
       const formData = new FormData();
       formData.append('images', selectedMainImage);
 
-      const response = await fetch('http://localhost:5000/api/products/upload', {
+      const response = await fetch(getApiUrl('/api/products/upload'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -168,7 +169,7 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
         formData.append('images', image);
       });
 
-      const response = await fetch('http://localhost:5000/api/products/upload', {
+      const response = await fetch(getApiUrl('/api/products/upload'), {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${localStorage.getItem('adminToken')}`,
@@ -224,7 +225,7 @@ const EditProductModal = ({ isOpen, onClose, onProductUpdated, product }) => {
     setError('');
 
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:5000/api/products/${product.id}`, {
+      const response = await makeAuthenticatedRequest(`/api/products/${product.id}`, {
         method: 'PUT',
         body: JSON.stringify(formData)
       });

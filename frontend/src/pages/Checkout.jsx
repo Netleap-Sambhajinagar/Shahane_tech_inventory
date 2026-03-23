@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Minus, Plus, Trash2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../utils/api';
 import BOX_IMAGE from '../assets/product_box.png';
 import { useCart } from '../context/CartContext';
 
@@ -42,7 +43,7 @@ const Checkout = () => {
       };
 
       // Send order to backend
-      const response = await fetch('http://localhost:5000/api/orders', {
+      const response = await fetch(getApiUrl('/api/orders'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

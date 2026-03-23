@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../../utils/api';
 import { ShieldCheck, Mail, Lock, ArrowRight } from 'lucide-react';
 import { setItemWithEvent } from '../../utils/storage';
 
@@ -12,7 +13,7 @@ const AdminLogin = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const res = await fetch('http://localhost:5000/api/admins/login', {
+      const res = await fetch(getApiUrl('/api/admins/login'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),

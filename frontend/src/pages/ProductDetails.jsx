@@ -4,6 +4,7 @@ import BOX_IMAGE from '../assets/product_box.png';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import ProductCard from '../components/ProductCard';
+import { getApiUrl } from '../utils/api';
 
 const ProductDetails = () => {
   const { id } = useParams();
@@ -15,7 +16,7 @@ const ProductDetails = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:5000/api/products/${id}`)
+    fetch(getApiUrl(`/api/products/${id}`))
       .then(res => {
         if (!res.ok) {
           throw new Error(`HTTP error! status: ${res.status}`);

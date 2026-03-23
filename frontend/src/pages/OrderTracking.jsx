@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getApiUrl } from '../utils/api';
 import { CheckCircle, Circle, Package, Truck, Home, ShoppingBag, X, AlertCircle } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { getOrderStatusFromDB, getStatusColor, getStatusBgColor, formatOrderDate, generateTrackingNumber } from '../utils/orderTracking';
@@ -20,7 +21,7 @@ const OrderTracking = () => {
       console.log('Fetching user orders...');
       
       // Use the new public customer endpoint
-      const response = await fetch('http://localhost:5000/api/customer/orders');
+      const response = await fetch(getApiUrl('/api/customer/orders'));
       if (!response.ok) {
         throw new Error('Failed to fetch orders');
       }

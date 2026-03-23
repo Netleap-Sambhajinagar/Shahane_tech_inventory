@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Save, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { getApiUrl } from '../utils/api';
 
 const AddressManagement = () => {
   const navigate = useNavigate();
@@ -27,7 +28,7 @@ const AddressManagement = () => {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/users/address', {
+      const response = await fetch(getApiUrl('/api/users/address'), {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -77,7 +78,7 @@ const AddressManagement = () => {
 
     try {
       const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/users/address', {
+      const response = await fetch(getApiUrl('/api/users/address'), {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

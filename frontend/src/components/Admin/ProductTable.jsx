@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { SlidersHorizontal, Pencil, Trash2, ChevronRight, Plus, Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import { makeAuthenticatedRequest } from '../../utils/auth';
+import { getApiUrl } from '../../utils/api';
 import AddProductModal from './AddProductModal';
 import EditProductModal from './EditProductModal';
 
@@ -15,7 +16,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
 
   useEffect(() => {
-    makeAuthenticatedRequest('http://localhost:5000/api/products')
+    makeAuthenticatedRequest('/api/products')
       .then(data => {
         setProducts(data);
         setFilteredProducts(data);
@@ -64,7 +65,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
   const handleProductAdded = (response) => {
     console.log('Product added:', response);
     // Refresh the products list
-    makeAuthenticatedRequest('http://localhost:5000/api/products')
+    makeAuthenticatedRequest('/api/products')
       .then(data => {
         setProducts(data);
         setFilteredProducts(data);
@@ -81,7 +82,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
     }
     
     try {
-      const response = await makeAuthenticatedRequest(`http://localhost:5000/api/products/${productId}`, {
+      const response = await makeAuthenticatedRequest(`/api/products/${productId}`, {
         method: 'DELETE'
       });
       
@@ -105,7 +106,7 @@ const ProductTable = ({ globalSearchTerm = '' }) => {
   const handleProductUpdated = (response) => {
     console.log('Product updated:', response);
     // Refresh the products list
-    makeAuthenticatedRequest('http://localhost:5000/api/products')
+    makeAuthenticatedRequest('/api/products')
       .then(data => {
         setProducts(data);
         setFilteredProducts(data);
