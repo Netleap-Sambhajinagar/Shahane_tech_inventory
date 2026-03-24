@@ -18,7 +18,7 @@ const io = new Server(server, {
         origin: [
             "http://localhost:5173", 
             "http://localhost:5174",
-            "https://your-vercel-app-url.vercel.app"
+            "https://shahane-tech-inventor-git-8a10a4-netleapproject-debugs-projects.vercel.app"
         ],
         methods: ["GET", "POST"]
     }
@@ -33,7 +33,7 @@ app.use(cors({
   origin: [
     "http://localhost:5173", 
     "http://localhost:5174",
-    "https://your-vercel-app-url.vercel.app"
+    "https://shahane-tech-inventor-git-8a10a4-netleapproject-debugs-projects.vercel.app/"
   ],
   credentials: true
 }));
