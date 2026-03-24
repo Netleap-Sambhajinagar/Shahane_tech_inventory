@@ -6,7 +6,6 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  base: './',
   resolve: {
     alias: {
       '@admin': path.resolve(__dirname, './src/components/Admin'),
