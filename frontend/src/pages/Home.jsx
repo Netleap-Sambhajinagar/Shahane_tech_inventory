@@ -24,7 +24,7 @@ const Home = () => {
 
   const fetchAllProducts = () => {
     setLoading(true);
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL;
     fetch(`${API_BASE_URL}/api/products`)
       .then(res => res.json())
       .then(data => {
@@ -76,7 +76,7 @@ const Home = () => {
 
   const fetchSearchResults = (query) => {
     setLoading(true);
-    const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    const API_BASE_URL = import.meta.env.VITE_API_URL;
     fetch(`${API_BASE_URL}/api/products/search?q=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => {

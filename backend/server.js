@@ -19,6 +19,7 @@ const io = new Server(server, {
             "http://localhost:5173", 
             "http://localhost:5174",
             "https://shahane-tech-inventory-28z006n1a-netleapproject-debugs-projects.vercel.app",
+            "https://shahane-tech-inventor-git-8a10a4-netleapproject-debugs-projects.vercel.app",
             "https://your-vercel-app-url.vercel.app"
         ],
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
@@ -35,6 +36,7 @@ app.use(cors({
     "http://localhost:5173", 
     "http://localhost:5174",
     "https://shahane-tech-inventory-28z006n1a-netleapproject-debugs-projects.vercel.app",
+    "https://shahane-tech-inventor-git-8a10a4-netleapproject-debugs-projects.vercel.app",
     "https://your-vercel-app-url.vercel.app"
   ],
   credentials: true,
