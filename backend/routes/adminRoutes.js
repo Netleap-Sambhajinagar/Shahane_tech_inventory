@@ -4,7 +4,7 @@ const db = require('../models/database');
 const { registerAdmin, loginAdmin } = require('../controllers/authController');
 
 // Auth Routes
-router.post('/register', registerAdmin);
+// router.post('/register', registerAdmin);
 router.post('/login', loginAdmin);
 
 // Get all admins
