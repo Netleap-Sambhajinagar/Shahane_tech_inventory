@@ -182,10 +182,11 @@ const ProductDetails = () => {
               <input 
                 type="number" 
                 value={quantity} 
-                onChange={(e) => setQuantity(parseInt(e.target.value) || 0)}
+                onChange={(e) => setQuantity(Math.min(5000, parseInt(e.target.value) || 0))}
+                max="5000"
                 className="w-16 sm:w-20 text-center font-bold text-slate-900 bg-transparent border-none focus:ring-0 text-sm sm:text-base"
               />
-              <button onClick={() => setQuantity(q => q + 100)} className="p-2 text-blue-600 hover:bg-blue-100 transition-colors">
+              <button onClick={() => setQuantity(q => Math.min(5000, q + 100))} className="p-2 text-blue-600 hover:bg-blue-100 transition-colors">
                 <Plus size={16} sm:size={20} strokeWidth={3} />
               </button>
             </div>

@@ -4,7 +4,18 @@ const db = require('../models/database');
 // @route   GET /api/orders
 exports.getAllOrders = async (req, res, next) => {
     try {
-        const [rows] = await db.query('SELECT * FROM orders');
+        let query = 'SELECT * FROM orders';
+        let queryParams = [];
+
+        // If the logged-in user is a regular user (not admin), only fetch their orders
+        if (req.user && req.user.role === 'user') {
+            query += ' WHERE customer_id = ?';
+            queryParams.push(`USER${req.user.id}`);
+        }
+        
+        query += ' ORDER BY created_at DESC';
+
+        const [rows] = await db.query(query, queryParams);
         
         // Get order items for each order (handle gracefully if table doesn't exist)
         const ordersWithItems = await Promise.all(rows.map(async (order) => {
@@ -121,6 +132,11 @@ exports.createOrder = async (req, res, next) => {
                 const actualProductId = product.product_id;
                 const currentStock = product.current_stock || 0;
                 const orderQuantity = parseInt(quantity) || 0;
+                
+                // Enforce maximum quantity limit
+                if (orderQuantity > 5000) {
+                    throw new Error(`Maximum limit of 5000 units exceeded for product: ${name || product_id}`);
+                }
                 
                 // Allow order even if stock is insufficient - will create negative inventory
                 const stockStatus = currentStock >= orderQuantity ? 'sufficient' : 'insufficient';

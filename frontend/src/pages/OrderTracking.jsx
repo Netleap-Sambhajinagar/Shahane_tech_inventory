@@ -20,16 +20,27 @@ const OrderTracking = () => {
       setLoading(true);
       console.log('Fetching user orders...');
       
-      // Use the new public customer endpoint
-      const response = await fetch(getApiUrl('/api/customer/orders'));
+      const token = localStorage.getItem('token');
+      if (!token) {
+        throw new Error('Please login to view your orders');
+      }
+
+      const response = await fetch(getApiUrl('/api/orders'), {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Your session has expired. Please login again.');
+        }
         throw new Error('Failed to fetch orders');
       }
       
       const data = await response.json();
       console.log('Orders fetched:', data);
       
-      // In a real app, you'd filter by customer ID. For now, we'll show all orders
       setOrders(data);
       if (data.length > 0) {
         setSelectedOrder(data[0]);

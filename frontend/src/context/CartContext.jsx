@@ -19,7 +19,14 @@ export const CartProvider = ({ children }) => {
     setCartItems(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
-        const newQty = (existing.quantity || 1) + qtyToAdd;
+        let newQty = (existing.quantity || 1) + qtyToAdd;
+        
+        // Enforce maximum quantity limit
+        if (newQty > 5000) {
+          alert('Maximum limit of 5000 units per product reached for this order.');
+          newQty = 5000;
+        }
+
         if (newQty <= 0) {
           return prev.filter(item => item.id !== product.id);
         }
@@ -27,9 +34,17 @@ export const CartProvider = ({ children }) => {
           item.id === product.id ? { ...item, quantity: newQty } : item
         );
       }
+      
+      // Enforce maximum quantity limit for new items
+      let initialQty = qtyToAdd;
+      if (initialQty > 5000) {
+        alert('Maximum limit of 5000 units per product reached for this order.');
+        initialQty = 5000;
+      }
+
       // If it's a new item, ensure we don't add negative or zero
-      if (qtyToAdd <= 0) return prev;
-      return [...prev, { ...product, quantity: qtyToAdd }];
+      if (initialQty <= 0) return prev;
+      return [...prev, { ...product, quantity: initialQty }];
     });
   };
 

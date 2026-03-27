@@ -59,35 +59,7 @@ app.use('/api/orders', orderRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admins', adminRoutes);
 
-// Public customer routes (no authentication required)
-app.get('/api/customer/orders', async (req, res) => {
-    try {
-        const db = require('./models/database');
-        const [rows] = await db.query('SELECT * FROM orders');
-        
-        // Get order items for each order
-        const ordersWithItems = await Promise.all(rows.map(async (order) => {
-            try {
-                const [items] = await db.query('SELECT * FROM order_items WHERE order_id = ?', [order.order_id]);
-                return {
-                    ...order,
-                    items: items
-                };
-            } catch (err) {
-                console.log(`Error getting items for order ${order.order_id}:`, err.message);
-                return {
-                    ...order,
-                    items: []
-                };
-            }
-        }));
-        
-        res.json(ordersWithItems);
-    } catch (err) {
-        console.error('Error fetching customer orders:', err);
-        res.status(500).json({ error: 'Failed to fetch orders' });
-    }
-});
+
 
 app.get("/", (req, res) => {
     res.send("Shahane Tech API is running 🚀");
